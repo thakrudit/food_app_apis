@@ -133,8 +133,6 @@ module.exports= {
             const non_required = {}
             const requestedData = await helper.validateObject(required, non_required)
 
-            // const cart_data = await CartItems.findOne({ where: { user_id: requestedData.user_id } })
-
             const cu_id = await CartItems.findAll({ where: { user_id: requestedData.user_id } })
 
             cu_id.forEach(async (product) => {
@@ -146,6 +144,9 @@ module.exports= {
                 })
 
             });
+            cu_id.forEach(async(deleteItems)=>{
+                await CartItems.destroy({where: {user_id: requestedData.user_id}})
+            })
             return helper.success(res, 'Orders Placed Successfully')
 
             // for (const element of cu_id) {
@@ -173,9 +174,6 @@ module.exports= {
             const requestedData = await helper.validateObject(required, non_required)
 
             const order_data = await OrderDetails.findAll({ where: { user_id: requestedData.user_id } })
-            // if (!order_data) {
-            //     return helper.error(res, 'Order Detail Not Found')
-            // }
 
             return helper.success(res, 'Orders Details Getting Successfully', order_data)
 
