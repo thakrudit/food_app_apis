@@ -7,7 +7,7 @@ const Menu = db.menu;
 const CartItems = db.cart_items;
 const OrderDetails = db.order_details;
 
-module.exports= {
+module.exports = {
     addMenuItems: async (req, res) => {
         try {
             const required = {
@@ -20,9 +20,9 @@ module.exports= {
             const non_required = {};
             const requestedData = await helper.validateObject(required, non_required);
 
-            const user = await User.findOne({where: {id: requestedData.id}})
+            const user = await User.findOne({ where: { id: requestedData.id } })
 
-            if(user.role == 0){
+            if (user.role == 0) {
                 return helper.error(res, "You are not Admin. Only Admin can Add new Menu Items")
             }
 
@@ -44,12 +44,18 @@ module.exports= {
             const required = {
                 user_id: req.user.id
             }
-            const non_required = {}
+            const non_required = {
+                offset: (!!req.query.offset) ? req.query.offset : 1,
+                limit: (!!req.query.limit) ? req.query.limit : 5
+            }
             const requestedData = await helper.validateObject(required, non_required)
-    
-            const data = await Menu.findAll()
+
+            const data = await Menu.findAll({
+                offset: parseInt(requestedData.offset - 1) * parseInt(requestedData.limit),
+                limit: parseInt(requestedData.limit)
+            })
             return helper.success(res, "Fatching Menu Items Successfully", data)
-    
+
         } catch (error) {
             return helper.error(res, error)
         }
@@ -86,8 +92,8 @@ module.exports= {
             const requestedData = await helper.validateObject(required, non_required)
 
             const get_price = await Menu.findOne({ where: { id: requestedData.menu_id } })
-            
-            const checkMenuId = await CartItems.findOne({ where: {user_id: req.user.id, menu_id: requestedData.menu_id } })
+
+            const checkMenuId = await CartItems.findOne({ where: { user_id: req.user.id, menu_id: requestedData.menu_id } })
 
             if (!!checkMenuId) {
                 checkMenuId.quantity = parseInt(checkMenuId.quantity) + parseInt(requestedData.quantity)
@@ -144,8 +150,8 @@ module.exports= {
                 })
 
             });
-            cu_id.forEach(async(deleteItems)=>{
-                await CartItems.destroy({where: {user_id: requestedData.user_id}})
+            cu_id.forEach(async (deleteItems) => {
+                await CartItems.destroy({ where: { user_id: requestedData.user_id } })
             })
             return helper.success(res, 'Orders Placed Successfully')
 
